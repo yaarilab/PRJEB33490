@@ -863,36 +863,6 @@ CollapseSeq.py -s ${reads} -n ${max_missing} ${fasta} ${inner} ${uf} ${cf} ${act
 }
 
 
-process split_sequences_split_seq {
-
-input:
- set val(name),file(reads) from g22_16_reads0_g23_20
-
-output:
- set val(name), file("*_atleast-*.fast*")  into g23_20_reads0_g24_15
-
-script:
-field = params.split_sequences_split_seq.field
-num = params.split_sequences_split_seq.num
-fasta = params.split_sequences_split_seq.fasta
-
-readArray = reads.toString()
-
-if(num!=0){
-	num = " --num ${num}"
-}else{
-	num = ""
-}
-
-fasta = (fasta=="false") ? "" : "--fasta"
-
-"""
-SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
-"""
-
-}
-
-
 process Mask_Primer_1_parse_log_MP {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*table.tab$/) "logs/$filename"}
@@ -1129,13 +1099,44 @@ rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_di
 }
 
 
+process split_sequences_split_seq {
+
+input:
+ set val(name),file(reads) from g22_16_reads0_g23_20
+
+output:
+ set val(name), file("*_atleast-*.fast*")  into g23_20_reads0_g_10, g23_20_reads0_g24_15
+
+script:
+field = params.split_sequences_split_seq.field
+num = params.split_sequences_split_seq.num
+fasta = params.split_sequences_split_seq.fasta
+
+readArray = reads.toString()
+
+if(num!=0){
+	num = " --num ${num}"
+}else{
+	num = ""
+}
+
+fasta = (fasta=="false") ? "" : "--fasta"
+
+"""
+SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
+"""
+
+}
+
+
 process Parse_header_parse_headers {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*${out}$/) "logs/$filename"}
 input:
  set val(name), file(reads) from g23_20_reads0_g24_15
 
 output:
- set val(name),file("*${out}")  into g24_15_reads0_g_10
+ set val(name),file("*${out}")  into g24_15_reads00
 
 script:
 method = params.Parse_header_parse_headers.method
@@ -1171,7 +1172,7 @@ process vdjbase_input {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
 input:
- set val(name),file(reads) from g24_15_reads0_g_10
+ set val(name),file(reads) from g23_20_reads0_g_10
 
 output:
  file "${chain}"  into g_10_germlineDb00
