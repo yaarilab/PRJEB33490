@@ -15,8 +15,8 @@ Channel
 	g_0_reads_g_15 = Channel.empty()
  }
 
-Channel.value(params.mate).into{g_1_mate_g_15;g_1_mate_g5_15;g_1_mate_g5_19;g_1_mate_g5_12;g_1_mate_g20_11;g_1_mate_g20_9;g_1_mate_g20_12;g_1_mate_g21_11;g_1_mate_g21_9;g_1_mate_g21_12}
-Channel.value(params.mate2).into{g_18_mate_g20_11;g_18_mate_g20_9;g_18_mate_g20_12;g_18_mate_g21_11;g_18_mate_g21_9;g_18_mate_g21_12}
+Channel.value(params.mate).into{g_1_mate_g_15;g_1_mate_g5_15;g_1_mate_g5_19;g_1_mate_g5_12;g_1_mate_g20_9;g_1_mate_g20_12;g_1_mate_g20_11;g_1_mate_g21_9;g_1_mate_g21_12;g_1_mate_g21_11}
+Channel.value(params.mate2).into{g_18_mate_g20_9;g_18_mate_g20_12;g_18_mate_g20_11;g_18_mate_g21_9;g_18_mate_g21_12;g_18_mate_g21_11}
 
 
 process unizp {
@@ -456,8 +456,8 @@ if(mate=="pair"){
 	
 	"""
 	
-	MaskPrimers.py ${args_1} -s ${R1} ${R1_primers} --log MP_R1_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log & \
-	MaskPrimers.py ${args_2} -s ${R2} ${R2_primers} --log MP_R2_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log & \
+	MaskPrimers.py ${args_1} -s ${R1} ${R1_primers} --log MP_R1_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log & \
+	MaskPrimers.py ${args_2} -s ${R2} ${R2_primers} --log MP_R2_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log & \
 	wait
 	"""
 }else{
@@ -470,7 +470,7 @@ if(mate=="pair"){
 	"""
 	echo -e "Assuming inputs for R1\n"
 	
-	MaskPrimers.py ${args_1} -s ${reads} ${R1_primers} --log MP_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log
+	MaskPrimers.py ${args_1} -s ${reads} ${R1_primers} --log MP_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log
 	"""
 }
 
@@ -807,8 +807,8 @@ if(mate=="pair"){
 	
 	"""
 	
-	MaskPrimers.py ${args_1} -s ${R1} ${R1_primers} --log MP_R1_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log & \
-	MaskPrimers.py ${args_2} -s ${R2} ${R2_primers} --log MP_R2_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log & \
+	MaskPrimers.py ${args_1} -s ${R1} ${R1_primers} --log MP_R1_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log & \
+	MaskPrimers.py ${args_2} -s ${R2} ${R2_primers} --log MP_R2_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log & \
 	wait
 	"""
 }else{
@@ -821,7 +821,7 @@ if(mate=="pair"){
 	"""
 	echo -e "Assuming inputs for R1\n"
 	
-	MaskPrimers.py ${args_1} -s ${reads} ${R1_primers} --log MP_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${R1}_MP.log
+	MaskPrimers.py ${args_1} -s ${reads} ${R1_primers} --log MP_${name}.log  --nproc ${nproc} ${failed} ${fasta} 2>&1 | tee -a out_${name}_MP.log
 	"""
 }
 
@@ -895,6 +895,7 @@ SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
 
 process Mask_Primer_1_parse_log_MP {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*table.tab$/) "logs/$filename"}
 input:
  val mate from g_18_mate_g21_9
  set val(name), file(log_file) from g21_11_logFile2_g21_9
