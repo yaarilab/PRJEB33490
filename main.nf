@@ -834,8 +834,8 @@ input:
  set val(name), file(reads) from g21_11_reads0_g22_16
 
 output:
- set val(name),  file("*_collapse-unique.fast*")  into g22_16_reads00
- set val(name),  file("*_collapse-duplicate.fast*") optional true  into g22_16_reads_duplicate1_g23_20
+ set val(name),  file("*_collapse-unique.fast*")  into g22_16_reads0_g23_20
+ set val(name),  file("*_collapse-duplicate.fast*") optional true  into g22_16_reads_duplicate11
  set val(name),  file("*_collapse-undetermined.fast*") optional true  into g22_16_reads_undetermined22
  file "CS_*"  into g22_16_logFile33
 
@@ -866,7 +866,7 @@ CollapseSeq.py -s ${reads} -n ${max_missing} ${fasta} ${inner} ${uf} ${cf} ${act
 process split_sequences_split_seq {
 
 input:
- set val(name),file(reads) from g22_16_reads_duplicate1_g23_20
+ set val(name),file(reads) from g22_16_reads0_g23_20
 
 output:
  set val(name), file("*_atleast-*.fast*")  into g23_20_reads0_g24_15
