@@ -828,41 +828,6 @@ if(mate=="pair"){
 }
 
 
-process collapse_sequences_collapse_seq {
-
-input:
- set val(name), file(reads) from g21_11_reads0_g22_16
-
-output:
- set val(name),  file("*_collapse-unique.fast*")  into g22_16_reads0_g23_20
- set val(name),  file("*_collapse-duplicate.fast*") optional true  into g22_16_reads_duplicate11
- set val(name),  file("*_collapse-undetermined.fast*") optional true  into g22_16_reads_undetermined22
- file "CS_*"  into g22_16_logFile33
-
-script:
-max_missing = params.collapse_sequences_collapse_seq.max_missing
-inner = params.collapse_sequences_collapse_seq.inner
-fasta = params.collapse_sequences_collapse_seq.fasta
-act = params.collapse_sequences_collapse_seq.act
-uf = params.collapse_sequences_collapse_seq.uf
-cf = params.collapse_sequences_collapse_seq.cf
-nproc = params.collapse_sequences_collapse_seq.nproc
-failed = params.collapse_sequences_collapse_seq.failed
-
-inner = (inner=="true") ? "--inner" : ""
-fasta = (fasta=="true") ? "--fasta" : ""
-act = (act=="none") ? "" : "--act ${act}"
-cf = (cf=="") ? "" : "--cf ${cf}"
-uf = (uf=="") ? "" : "--uf ${uf}"
-failed = (failed=="false") ? "" : "--failed"
-
-"""
-CollapseSeq.py -s ${reads} -n ${max_missing} ${fasta} ${inner} ${uf} ${cf} ${act} --log CS_${name}.log ${failed}
-"""
-
-}
-
-
 process Mask_Primer_1_parse_log_MP {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*table.tab$/) "logs/$filename"}
@@ -1099,31 +1064,36 @@ rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_di
 }
 
 
-process split_sequences_split_seq {
+process collapse_sequences_collapse_seq {
 
 input:
- set val(name),file(reads) from g22_16_reads0_g23_20
+ set val(name), file(reads) from g21_11_reads0_g22_16
 
 output:
- set val(name), file("*_atleast-*.fast*")  into g23_20_reads0_g_10, g23_20_reads0_g24_15
+ set val(name),  file("*_collapse-unique.fast*")  into g22_16_reads0_g_10, g22_16_reads0_g24_15
+ set val(name),  file("*_collapse-duplicate.fast*") optional true  into g22_16_reads_duplicate11
+ set val(name),  file("*_collapse-undetermined.fast*") optional true  into g22_16_reads_undetermined22
+ file "CS_*"  into g22_16_logFile33
 
 script:
-field = params.split_sequences_split_seq.field
-num = params.split_sequences_split_seq.num
-fasta = params.split_sequences_split_seq.fasta
+max_missing = params.collapse_sequences_collapse_seq.max_missing
+inner = params.collapse_sequences_collapse_seq.inner
+fasta = params.collapse_sequences_collapse_seq.fasta
+act = params.collapse_sequences_collapse_seq.act
+uf = params.collapse_sequences_collapse_seq.uf
+cf = params.collapse_sequences_collapse_seq.cf
+nproc = params.collapse_sequences_collapse_seq.nproc
+failed = params.collapse_sequences_collapse_seq.failed
 
-readArray = reads.toString()
-
-if(num!=0){
-	num = " --num ${num}"
-}else{
-	num = ""
-}
-
-fasta = (fasta=="false") ? "" : "--fasta"
+inner = (inner=="true") ? "--inner" : ""
+fasta = (fasta=="true") ? "--fasta" : ""
+act = (act=="none") ? "" : "--act ${act}"
+cf = (cf=="") ? "" : "--cf ${cf}"
+uf = (uf=="") ? "" : "--uf ${uf}"
+failed = (failed=="false") ? "" : "--failed"
 
 """
-SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
+CollapseSeq.py -s ${reads} -n ${max_missing} ${fasta} ${inner} ${uf} ${cf} ${act} --log CS_${name}.log ${failed}
 """
 
 }
@@ -1133,7 +1103,7 @@ process Parse_header_parse_headers {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*${out}$/) "logs/$filename"}
 input:
- set val(name), file(reads) from g23_20_reads0_g24_15
+ set val(name), file(reads) from g22_16_reads0_g24_15
 
 output:
  set val(name),file("*${out}")  into g24_15_reads00
@@ -1172,7 +1142,7 @@ process vdjbase_input {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
 input:
- set val(name),file(reads) from g23_20_reads0_g_10
+ set val(name),file(reads) from g22_16_reads0_g_10
 
 output:
  file "${chain}"  into g_10_germlineDb00
@@ -1239,6 +1209,35 @@ json_string <- toJSON(json_data, pretty = TRUE, auto_unbox = TRUE)
 print(json_string)
 # Write the JSON string to a file
 writeLines(json_string, "pre_processed_metadata.json")
+"""
+
+}
+
+
+process split_sequences_split_seq {
+
+input:
+
+output:
+ set val(name), file("*_atleast-*.fast*")  into g23_20_reads00
+
+script:
+field = params.split_sequences_split_seq.field
+num = params.split_sequences_split_seq.num
+fasta = params.split_sequences_split_seq.fasta
+
+readArray = reads.toString()
+
+if(num!=0){
+	num = " --num ${num}"
+}else{
+	num = ""
+}
+
+fasta = (fasta=="false") ? "" : "--fasta"
+
+"""
+SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
 """
 
 }
