@@ -1214,35 +1214,6 @@ writeLines(json_string, "pre_processed_metadata.json")
 }
 
 
-process split_sequences_split_seq {
-
-input:
-
-output:
- set val(name), file("*_atleast-*.fast*")  into g23_20_reads00
-
-script:
-field = params.split_sequences_split_seq.field
-num = params.split_sequences_split_seq.num
-fasta = params.split_sequences_split_seq.fasta
-
-readArray = reads.toString()
-
-if(num!=0){
-	num = " --num ${num}"
-}else{
-	num = ""
-}
-
-fasta = (fasta=="false") ? "" : "--fasta"
-
-"""
-SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
-"""
-
-}
-
-
 workflow.onComplete {
 println "##Pipeline execution summary##"
 println "---------------------------"
